@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Math Hangman</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #05050a;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .neon-box-blue {
+            border: 2px solid #00f3ff;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4), inset 0 0 15px rgba(0, 243, 255, 0.2);
+        }
+
+        .neon-box-pink {
+            border: 2px solid #ff0055;
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.4), inset 0 0 15px rgba(255, 0, 85, 0.2);
+        }
+
+        .neon-text-blue {
+            color: #00f3ff;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.7), 0 0 20px rgba(0, 243, 255, 0.5);
+        }
+
+        .neon-text-pink {
+            color: #ff0055;
+            text-shadow: 0 0 10px rgba(255, 0, 85, 0.7), 0 0 20px rgba(255, 0, 85, 0.5);
+        }
+
+        .neon-text-green {
+            color: #00ff66;
+            text-shadow: 0 0 10px rgba(0, 255, 102, 0.7), 0 0 20px rgba(0, 255, 102, 0.5);
+        }
+
+        .neon-btn {
+            background: transparent;
+            border: 2px solid #00f3ff;
+            color: #00f3ff;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .neon-btn:hover {
+            background: #00f3ff;
+            color: #05050a;
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.9);
+        }
+
+        .neon-btn-pink {
+            border: 2px solid #ff0055;
+            color: #ff0055;
+            box-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+        }
+
+        .neon-btn-pink:hover {
+            background: #ff0055;
+            color: #05050a;
+            box-shadow: 0 0 25px rgba(255, 0, 85, 0.9);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+
+        .shake-anim {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse-anim {
+            animation: pulseGlow 1s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-4 sm:p-6">
+
+    <header class="w-full max-w-2xl text-center py-4">
+        <h1 class="text-3xl sm:text-5xl font-black neon-text-blue tracking-wider mb-1">NEON MATH HANGMAN</h1>
+        <p class="text-xs sm:text-sm text-gray-400">Tezkor hisoblang, stikmanni qutqaring!</p>
+    </header>
+
+    <main class="w-full max-w-xl flex flex-col items-center justify-center flex-grow my-4">
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="w-full neon-box-blue rounded-2xl p-6 sm:p-8 text-center flex flex-col items-center backdrop-blur-md bg-black/40">
+            <div class="mb-6">
+                <svg class="w-24 h-24 mx-auto neon-text-blue" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3">
+                    <circle cx="50" cy="25" r="12" stroke="#00f3ff"/>
+                    <line x1="50" y1="37" x2="50" y2="70" stroke="#00f3ff"/>
+                    <line x1="50" y1="48" x2="30" y2="38" stroke="#00f3ff"/>
+                    <line x1="50" y1="48" x2="70" y2="38" stroke="#00f3ff"/>
+                    <line x1="50" y1="70" x2="35" y2="95" stroke="#00f3ff"/>
+                    <line x1="50" y1="70" x2="65" y2="95" stroke="#00f3ff"/>
+                </svg>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-200">O'yinga xush kelibsiz!</h2>
+            <p class="text-sm text-gray-400 mb-6 leading-relaxed">Har bir misol uchun sizda <span class="neon-text-pink font-bold">13 soniya</span> vaqt bor. 3 ta xato qilsangiz stikman arqonda osib qoldirishadi!</p>
+            <button onclick="startGame()" class="neon-btn font-bold py-3 px-8 rounded-xl text-lg uppercase tracking-wider w-full sm:w-auto">O'yinni Boshlash</button>
+        </div>
+
+        <!-- Game Play Screen -->
+        <div id="game-screen" class="hidden w-full flex flex-col items-center">
+            
+            <!-- Top Status Bar (Score & Lives/Mistakes) -->
+            <div class="w-full flex justify-between items-center mb-4 px-2">
+                <div class="neon-box-blue px-4 py-2 rounded-xl bg-black/40 text-sm sm:text-base">
+                    Ball: <span id="score-val" class="neon-text-green font-bold">0</span>
+                </div>
+                <div class="neon-box-pink px-4 py-2 rounded-xl bg-black/40 text-sm sm:text-base">
+                    Xatolar: <span id="mistake-val" class="neon-text-pink font-bold">0</span> / 3
+                </div>
+            </div>
+
+            <!-- Canvas/Visual for Hangman Stickman -->
+            <div class="w-full neon-box-blue rounded-2xl p-4 mb-4 bg-black/60 flex flex-col items-center relative h-56 sm:h-64 justify-center">
+                <!-- SVG Hangman representation -->
+                <svg id="hangman-svg" class="w-40 h-40 sm:w-48 sm:h-48" viewBox="0 0 120 120">
+                    <!-- Gallow Structure -->
+                    <line x1="15" y1="110" x2="105" y2="110" stroke="#00f3ff" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="35" y1="110" x2="35" y2="10" stroke="#00f3ff" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="35" y1="10" x2="85" y2="10" stroke="#00f3ff" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="85" y1="10" x2="85" y2="30" stroke="#ff0055" stroke-width="3" stroke-linecap="round" id="rope"/>
+                    
+                    <!-- Stickman Parts (Hidden initially, shown based on mistakes) -->
+                    <!-- Head (Mistake 1) -->
+                    <circle id="part-head" cx="85" cy="42" r="12" stroke="#ff0055" stroke-width="3" fill="none" class="hidden"/>
+                    <!-- Body (Mistake 2) -->
+                    <line id="part-body" x1="85" y1="54" x2="85" y2="80" stroke="#ff0055" stroke-width="3" stroke-linecap="round" class="hidden"/>
+                    <!-- Arms (Mistake 2) -->
+                    <line id="part-arms" x1="65" y1="65" x2="105" y2="65" stroke="#ff0055" stroke-width="3" stroke-linecap="round" class="hidden"/>
+                    <!-- Legs (Mistake 3 - Game Over) -->
+                    <line id="part-legs" x1="85" y1="80" x2="70" y2="105" stroke="#ff0055" stroke-width="3" stroke-linecap="round" class="hidden"/>
+                    <line id="part-legs2" x1="85" y1="80" x2="100" y2="105" stroke="#ff0055" stroke-width="3" stroke-linecap="round" class="hidden"/>
+                </svg>
+                <div id="rope-status" class="text-xs text-gray-400 mt-1">Stikman xavf ostida!</div>
+            </div>
+
+            <!-- Timer Bar -->
+            <div class="w-full bg-gray-900 rounded-full h-3 mb-6 p-0.5 border border-cyan-500/40">
+                <div id="timer-bar" class="bg-cyan-400 h-full rounded-full transition-all duration-1000" style="width: 100%; box-shadow: 0 0 10px #00f3ff;"></div>
+            </div>
+
+            <!-- Math Question Card -->
+            <div id="question-card" class="w-full neon-box-blue rounded-2xl p-6 text-center bg-black/50 mb-6 transition-all">
+                <div id="math-problem" class="text-3xl sm:text-5xl font-black neon-text-blue tracking-widest mb-4">12 + 8 = ?</div>
+                
+                <!-- Answer Display Box -->
+                <div class="flex justify-center items-center mb-6">
+                    <div id="answer-display" class="w-48 sm:w-60 h-14 bg-gray-900 border-2 border-cyan-400 rounded-xl flex items-center justify-center text-2xl sm:text-3xl font-bold neon-text-green tracking-wider shadow-[0_0_15px_rgba(0,243,255,0.3)]">
+                        _
+                    </div>
+                </div>
+
+                <!-- On-Screen Neon Numpad -->
+                <div class="grid grid-cols-3 gap-3 max-w-xs mx-auto mb-4">
+                    <button onclick="appendNum('1')" class="neon-btn py-3 rounded-xl text-xl font-bold">1</button>
+                    <button onclick="appendNum('2')" class="neon-btn py-3 rounded-xl text-xl font-bold">2</button>
+                    <button onclick="appendNum('3')" class="neon-btn py-3 rounded-xl text-xl font-bold">3</button>
+                    <button onclick="appendNum('4')" class="neon-btn py-3 rounded-xl text-xl font-bold">4</button>
+                    <button onclick="appendNum('5')" class="neon-btn py-3 rounded-xl text-xl font-bold">5</button>
+                    <button onclick="appendNum('6')" class="neon-btn py-3 rounded-xl text-xl font-bold">6</button>
+                    <button onclick="appendNum('7')" class="neon-btn py-3 rounded-xl text-xl font-bold">7</button>
+                    <button onclick="appendNum('8')" class="neon-btn py-3 rounded-xl text-xl font-bold">8</button>
+                    <button onclick="appendNum('9')" class="neon-btn py-3 rounded-xl text-xl font-bold">9</button>
+                    <button onclick="clearInput()" class="neon-btn-pink py-3 rounded-xl text-xl font-bold">C</button>
+                    <button onclick="appendNum('0')" class="neon-btn py-3 rounded-xl text-xl font-bold">0</button>
+                    <button onclick="appendNum('-')" class="neon-btn py-3 rounded-xl text-xl font-bold">-</button>
+                </div>
+
+                <button onclick="submitAnswer()" class="neon-btn font-bold py-3 px-8 rounded-xl text-lg uppercase tracking-wider w-full">Javobni Tekshirish</button>
+            </div>
+
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameover-screen" class="hidden w-full neon-box-pink rounded-2xl p-6 sm:p-8 text-center backdrop-blur-md bg-black/60">
+            <h2 class="text-3xl sm:text-4xl font-black neon-text-pink mb-2">O'YIN TUGADI!</h2>
+            <p class="text-sm text-gray-300 mb-6">Stikmanni osib qoldirishdi...</p>
+            
+            <div class="neon-box-blue p-4 rounded-xl mb-6 bg-black/40">
+                <p class="text-gray-400 text-sm mb-1">Sizning natijangiz:</p>
+                <p id="final-score" class="text-3xl font-black neon-text-green">0</p>
+            </div>
+
+            <button onclick="restartGame()" class="neon-btn font-bold py-3 px-8 rounded-xl text-lg uppercase tracking-wider w-full">Qaytadan O'ynash</button>
+        </div>
+
+    </main>
+
+    <footer class="w-full text-center py-2 text-xs text-gray-500">
+        Neon Math Challenge &copy; 2026
+    </footer>
+
+    <script>
+        let score = 0;
+        let mistakes = 0;
+        let currentAnswer = 0;
+        let currentInput = "";
+        let timer = null;
+        let timeLeft = 13;
+        const maxTime = 13;
+
+        const startScreen = document.getElementById("start-screen");
+        const gameScreen = document.getElementById("game-screen");
+        const gameoverScreen = document.getElementById("gameover-screen");
+        
+        const scoreVal = document.getElementById("score-val");
+        const mistakeVal = document.getElementById("mistake-val");
+        const mathProblem = document.getElementById("math-problem");
+        const answerDisplay = document.getElementById("answer-display");
+        const timerBar = document.getElementById("timer-bar");
+        const finalScore = document.getElementById("final-score");
+        
+        const partHead = document.getElementById("part-head");
+        const partBody = document.getElementById("part-body");
+        const partArms = document.getElementById("part-arms");
+        const partLegs = document.getElementById("part-legs");
+        const partLegs2 = document.getElementById("part-legs2");
+        const rope = document.getElementById("rope");
+        const questionCard = document.getElementById("question-card");
+
+        // Start game function
+        function startGame() {
+            score = 0;
+            mistakes = 0;
+            scoreVal.textContent = score;
+            mistakeVal.textContent = mistakes;
+            
+            startScreen.classList.add("hidden");
+            gameoverScreen.classList.add("hidden");
+            gameScreen.classList.remove("hidden");
+            
+            resetStickman();
+            generateProblem();
+        }
+
+        // Generate mathematical problem
+        function generateProblem() {
+            currentInput = "";
+            updateDisplay();
+            
+            // Randomly choose operation +, -, *, /
+            const ops = ['+', '-', '*'];
+            // Let's add division occasionally with clean numbers
+            const op = ops[Math.floor(Math.random() * ops.length)];
+            
+            let num1, num2;
+            if (op === '+') {
+                num1 = Math.floor(Math.random() * 50) + 1;
+                num2 = Math.floor(Math.random() * 50) + 1;
+                currentAnswer = num1 + num2;
+            } else if (op === '-') {
+                num1 = Math.floor(Math.random() * 50) + 10;
+                num2 = Math.floor(Math.random() * num1); // Ensure positive or clean result
+                currentAnswer = num1 - num2;
+            } else if (op === '*') {
+                num1 = Math.floor(Math.random() * 12) + 2;
+                num2 = Math.floor(Math.random() * 10) + 1;
+                currentAnswer = num1 * num2;
+            }
+            
+            mathProblem.textContent = `${num1} ${op} ${num2} = ?`;
+            
+            // Reset and start timer
+            clearInterval(timer);
+            timeLeft = maxTime;
+            timerBar.style.width = "100%";
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                let percent = (timeLeft / maxTime) * 100;
+                timerBar.style.width = percent + "%";
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    handleWrongAnswer("Vaqt tugadi!");
+                }
+            }, 1000);
+        }
+
+        // Numpad input handling
+        function appendNum(num) {
+            if (currentInput.length < 5) {
+                currentInput += num;
+                updateDisplay();
+            }
+        }
+
+        function clearInput() {
+            currentInput = "";
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            answerDisplay.textContent = currentInput === "" ? "_" : currentInput;
+        }
+
+        // Keyboard listener support
+        window.addEventListener('keydown', (e) => {
+            if (gameScreen.classList.contains('hidden')) return;
+            
+            if (e.key >= '0' && e.key <= '9') {
+                appendNum(e.key);
+            } else if (e.key === '-') {
+                appendNum('-');
+            } else if (e.key === 'Backspace') {
+                currentInput = currentInput.slice(0, -1);
+                updateDisplay();
+            } else if (e.key === 'Enter') {
+                submitAnswer();
+            }
+        });
+
+        // Submit Answer check
+        function submitAnswer() {
+            if (currentInput === "" || currentInput === "-") return;
+            
+            clearInterval(timer);
+            let userAns = parseInt(currentInput);
+            
+            if (userAns === currentAnswer) {
+                // Correct answer
+                score += 10;
+                scoreVal.textContent = score;
+                
+                // Visual success feedback
+                questionCard.classList.add("neon-box-blue");
+                questionCard.style.borderColor = "#00ff66";
+                setTimeout(() => {
+                    questionCard.style.borderColor = "#00f3ff";
+                }, 400);
+                
+                generateProblem();
+            } else {
+                // Wrong answer
+                handleWrongAnswer("Noto'g'ri javob!");
+            }
+        }
+
+        // Handle wrong answer or timeout
+        function handleWrongAnswer(msg) {
+            mistakes++;
+            mistakeVal.textContent = mistakes;
+            
+            // Visual shake feedback
+            questionCard.classList.add("shake-anim");
+            setTimeout(() => {
+                questionCard.classList.remove("shake-anim");
+            }, 400);
+            
+            updateStickmanVisuals();
+            
+            if (mistakes >= 3) {
+                gameOver();
+            } else {
+                generateProblem();
+            }
+        }
+
+        // Update Hangman visual according to mistakes count
+        function updateStickmanVisuals() {
+            if (mistakes === 1) {
+                partHead.classList.remove("hidden");
+                rope.setAttribute("y2", "45");
+            } else if (mistakes === 2) {
+                partBody.classList.remove("hidden");
+                partArms.classList.remove("hidden");
+                rope.setAttribute("y2", "30");
+            } else if (mistakes >= 3) {
+                partLegs.classList.remove("hidden");
+                partLegs2.classList.remove("hidden");
+                rope.setAttribute("stroke", "#333"); // Rope broken effect
+            }
+        }
+
+        function resetStickman() {
+            partHead.classList.add("hidden");
+            partBody.classList.add("hidden");
+            partArms.classList.add("hidden");
+            partLegs.classList.add("hidden");
+            partLegs2.classList.add("hidden");
+            rope.setAttribute("stroke", "#ff0055");
+            rope.setAttribute("y2", "30");
+        }
+
+        // Game Over function
+        function gameOver() {
+            clearInterval(timer);
+            gameScreen.classList.add("hidden");
+            gameoverScreen.classList.remove("hidden");
+            finalScore.textContent = score;
+        }
+
+        function restartGame() {
+            startGame();
+        }
+    </script>
+</body>
+</html>
